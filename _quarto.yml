@@ -7,7 +7,7 @@ website:
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/
+        href: https://github.com/MHTextMining/DataScience-2-Blog
       - icon: twitter
         href: https://twitter.com
 format:

@@ -1,8 +1,8 @@
 ---
-title: "Welcome To My Blog"
-author: "Tristan O'Malley"
-date: "2023-02-05"
-categories: [news]
+title: "Hate Speech Prediction"
+author: "Markus Häfner"
+date: "2023-02-10"
+categories: [code]
 ---
 
 This is the first post in a Quarto blog. Welcome!
