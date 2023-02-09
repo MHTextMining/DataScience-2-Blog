@@ -6,3 +6,5 @@
 /.quarto/
 /data/model.bin
 /data/word_embeddings.rds
+posts/Hate Speech Prediction/data/model.bin
+posts/Hate Speech Prediction/data/word_embeddings.rds

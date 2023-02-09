@@ -1,0 +1,922 @@
+---
+title: "Analysebericht"
+author: "Markus Häfner"
+date: "02.10.2023"
+format:
+  html:
+    toc: true
+bibliography: references.bib
+---
+
+# Introduction
+
+In this blog post we will be solving classification problems by trying to identify hate speech in tweets using machine learning algorithms. The data that we will be using is sourced from [@wiegand2019].
+
+# Setup
+
+### Loading Packages
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+library(wordcloud)
+library(fastrtext)
+library(tidyverse)
+library(tokenizers)
+library(tidytext)
+library(hcandersenr)
+library(SnowballC)  
+library(lsa)  
+library(easystats)  
+library(textclean)  
+library(quanteda)
+library(wordcloud)
+library(tidymodels)
+library(textrecipes)
+library(discrim)  
+library(naivebayes)
+library(tictoc)  
+library(remoji)  
+library(pradadata)
+library(knitr)
+library(parsnip)
+library(purrr)
+```
+
+## Train - Data
+
+### Load Data
+
+We start by reading in the training data right from text file provided by [@wiegand2019].
+
+```{r, warning=FALSE, message=FALSE}
+d_train <- 
+  data_read("data/germeval2018.training.txt",
+         header = FALSE)
+
+kable(head(d_train))
+```
+
+### Renaming Columns
+
+```{r}
+names(d_train) <- c("text", "c1", "c2")
+```
+
+### Adding ID Column
+
+```{r}
+d_train_id <- d_train %>% 
+  mutate(id = row_number()) 
+```
+
+## Test - Data
+
+### Load Data
+
+Same procedure as with our training data.
+
+```{r, warning=FALSE, message=FALSE}
+d_test <- 
+  data_read("data/germeval2018.test.txt",
+         header = FALSE)
+
+kable(head(d_test))
+```
+
+### Renaming Columns
+
+```{r}
+names(d_test) <- c("text", "c1", "c2")
+```
+
+### Adding ID Column
+
+```{r}
+d_test_id <- d_test %>% 
+  mutate(id = row_number()) 
+```
+
+# Exploratory Data Analysis
+
+## Classifiers
+
+Lets take a closer look at how our data is labeled. How many tweets are considered Hate-Speech?
+
+```{r}
+kable(d_train %>% 
+  filter(c1 == "OFFENSE") %>%
+  nrow() / nrow(d_train))
+```
+
+-\> Seems like we have 1/3 tweets, that contain hate-speech. and 2/3 normal ones. We wont really be taking classifier 2 (c2) into account during our analysis, but lets see what type of Hate-Speech ist the most common one.
+
+```{r}
+kable(d_train_id %>% 
+  count(c2))
+```
+
+-\> Every tweet that has been classified as "Offense" is categorized in either of the three categories PROFANITY, ABUSE, INSULT or OTHER. It seems like most hate speech cases are due to abuse.
+
+## Text
+
+### Word Frequency
+
+Lets see what the 20 most used words are.
+
+```{r, warning=FALSE, message=FALSE}
+frequent_terms <- qdap:::freq_terms(d_train$text, 100)
+
+ggplot(frequent_terms[1:20,], aes(x=FREQ, y=WORD, fill=WORD))+
+  geom_bar(stat="identity")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(angle = 0, hjust = 1))+
+  ylab("")+
+  xlab("Most frequently used words")+
+  guides(fill=FALSE)
+```
+
+Its not odd that the most used words are just fillwords. What we can conclude from that is that it will be really important for our later prediction to use stopwords. Lets try again using stopwords.
+
+```{r, warning=FALSE, message=FALSE}
+frequent_terms_sw <- qdap:::freq_terms(d_train$text, stopwords = stopwords_de, 100)
+
+ggplot(frequent_terms_sw[1:20,], aes(x=FREQ, y=WORD, fill=WORD))+
+  geom_bar(stat="identity")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(angle = 0, hjust = 1))+
+  ylab("")+
+  xlab("Most frequently used words excluding stopwords")+
+  guides(fill=FALSE)
+```
+
+Lets plot a wordcloud, just because we can.
+
+```{r, warning=FALSE, message=FALSE}
+wordcloud(words = frequent_terms_sw$WORD, 
+          freq = frequent_terms_sw$FREQ, 
+          max.words = 100, 
+          colors = bluebrown_colors())
+```
+
+Cool to look at. On first sight we can already see that a lot of words refer tagged users such as feldenfrizz.
+
+# Feature Engineering
+
+## Adding Text_length as Variable
+
+Nice to have!
+
+```{r}
+d_train_tl <-
+  d_train_id %>% 
+  mutate(text_length = str_length(text))
+
+kable(head(d_train_tl))
+```
+
+## Sentiment Analysis
+
+For our sentiments we will be using SentiWS by [@remus-etal-2010-sentiws]. The list contains a total of 16,406 positive and 16,328 negative german word forms.
+
+```{r, warning=FALSE, message=FALSE}
+sentiments <- read_csv("data/sentiments.csv")
+```
+
+To apply the sentiments we first need to "tokenize" our text. That way we will be able to apply a sentiment to each word.
+
+```{r}
+d_train_unnest <-
+  d_train_tl %>% 
+  unnest_tokens(input = text, output = token)
+
+kable(head(d_train_unnest))
+```
+
+Now can combine our two datasets and match each word its own sentiment value.
+
+```{r}
+d_train_senti <- 
+  d_train_unnest %>%  
+  inner_join(sentiments %>% select(-inflections), by = c("token" = "word"))
+
+kable(head(d_train_senti))
+```
+
+Lets take a look at our tweets again.
+
+```{r, warning=FALSE, message=FALSE}
+train_sentiments <-
+  d_train_senti %>% 
+  group_by(id, neg_pos) %>% 
+  summarise(mean = mean(value))
+```
+
+And spread the positive/negative values into their own respective columns.
+
+```{r}
+train_sentiments_spread <-
+  train_sentiments %>% 
+  pivot_wider(names_from = "neg_pos", values_from = "mean")
+
+kable(head(train_sentiments_spread))
+```
+
+Finally lets unite our "sentimented" data with our original data again.
+
+```{r}
+d_train_senti <-
+  d_train_tl %>% 
+  full_join(train_sentiments_spread)
+
+kable(head(d_train_senti))
+```
+
+## Profanities
+
+To Create a list of profanites we are going to combine data from three different sources.
+
+\(1\) A publicly available list of over 6000 german profane words [@schimpfw].
+
+\(2\) `schimpfwoerter` from the package [@pradadata] provides another list of german profanities.
+
+\(3\) [@ahn] curated a list of 1,300+ English terms that could be found offensive. Obviously our tweets are in german. But it seems like nowadays a lot of people are using english words or even a mixes of english and german words, so we will give it a try and then decide.
+
+### Load/Rename Lists
+
+```{r}
+profanities1 <- 
+  data_read("data/profanities.txt",
+         header = FALSE)
+```
+
+```{r}
+ profanities2 <- 
+   schimpfwoerter %>% 
+   mutate_all(str_to_lower) %>% 
+   rename(V1 = "word")
+```
+
+```{r}
+profanities3 <- 
+  data_read("data/profanities_en.txt",
+         header = FALSE)
+```
+
+### Merge Lists
+
+We are applying the function distinct() to remove duplicates.
+
+```{r}
+profanities <-
+  profanities1 %>% 
+  bind_rows(profanities2) %>%
+  bind_rows(profanities3) %>%
+  distinct()
+
+kable(nrow(profanities))
+```
+
+Tokenizing and applying our curated profanity list.
+
+```{r}
+d_train_prof <- 
+d_train_unnest %>% 
+  select(id, token) %>% 
+  mutate(profanity = token %in% profanities$V1)
+```
+
+How many words are considered as profanities?
+
+```{r}
+kable(d_train_prof %>% 
+  count(profanity))
+```
+
+It seems like about one third of our total words are considered as profane. This seems a bit high. Lets check our results to see if anything went wrong.
+
+```{r, warning=FALSE, message = FALSE, results='hide'}
+d_train_prof %>% arrange(desc(profanity), .by_group = TRUE)
+```
+
+Our mistake is obvious. The german word "die" is considered profane, since "die" is the verb to death. Because of that we will refrain from using the english list. Lets remove "die from our profanity list and try again.
+
+```{r}
+profanities <- subset(profanities, V1!= "die") 
+```
+
+Lets try again - how many words are considered as profanities?
+
+```{r}
+d_train_prof <- 
+d_train_unnest %>% 
+  select(id, token) %>% 
+  mutate(profanity = token %in% profanities$V1)
+
+kable(d_train_prof %>% 
+  count(profanity))
+```
+
+That sounds like a reasonable amount! Now we can combine our results with our main data frame.
+
+```{r, warning=FALSE, message=FALSE}
+d_train2 <-
+  d_train_senti %>% 
+  full_join(d_train_prof)
+```
+
+## Emojis
+
+For emojis we source the emoji data list from the package [@remoji], which includes a total of 870 emojis.
+
+```{r}
+emojis <- emoji(list_emoji(), pad = FALSE)
+```
+
+Since a sole list of emojis is not really much use for predicting Hate-Speech, it would be useful to have the corresponding sentiment score of each emoji to determine their sentimental value. Luckily [@Kralj2015emojis] provides the needed information on their [website](https://kt.ijs.si/data/Emoji_sentiment_ranking/index.html).
+
+```{r}
+emojis_sentiments <- data_read("data/emoji_sentiment_scores.csv")
+```
+
+Lets see what the most negative emojis are.
+
+```{r, warning= FALSE, message= FALSE, results= 'hide'}
+emojis_sentiments %>% arrange(senti_score, .by_group = TRUE)
+```
+
+Its not suprising to see some emojis up there. Still a lot of them are also so negatively conotated because Twitter is so heavily related to politics and elections. Thus using all of the negative emojis does not seem like the best idea. Therefore we handpick a few out of our curated list:
+
+```{r}
+emojis_hateful <-  
+  c("❌","✂️","💉","🔪","🔪","🔫","💣","🐍","🐷","🐵","💩","💩","💩",
+    "💀","👺","👹","👴","👵","😷","😡","😠","😤","😒","🚑","☠️","🗑",       
+    "👎️","🤢", "🤮",  "😖", "😣", "😩", "😨", "😝", "😳", "😬",
+    "😵","🖕","🤦‍♀️", "🤦‍" )
+```
+
+Lets save our `hateful_emojis_list` as a dataframe in our data directory.
+
+```{r}
+hateful_emoji_list <-
+  tibble(emoji = emojis_hateful)
+
+save(hateful_emoji_list, file = "data/hateful_emoji_list.RData")
+```
+
+## Word Embeddings
+
+For our Word Embeddings we will be using the fastText model of pretrained german embeddings eprovided by Deepset.ai The data can be found [here](https://www.deepset.ai/german-word-embeddings).
+
+Loading our Word embeddings model
+
+```{r}
+x <- "data/model.bin"
+deepset_model <- load_model(x)
+```
+
+Extracting dictionary and word vectors
+
+```{r}
+deepset_dict <- get_dictionary(deepset_model)
+word_vectors <- get_word_vectors(deepset_model)
+```
+
+Creating tibble containing the dictionary words.
+
+```{r}
+word_tibble <- tibble(word = deepset_dict)
+```
+
+Merging the tibble with the the word vectors.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+word_embeddings <- word_tibble %>% bind_cols(word_vectors)
+```
+
+Renaming Columns and saving the file in our data folder.
+
+```{r}
+names(word_embeddings) <- c("word", paste0("v", sprintf("%03d", 1:100)))
+#saveRDS(word_embeddings, file = "data/word_embeddings.rds")
+```
+
+# Recipes
+
+## Recipe 0
+
+As a baseline recipe we use the following methods: Removal of german stop words, word stemming and normalization of all predictors and word embeddings. We also use `step_mutate` to use our curated profanities, sentiments, emojis and hateful emojis as predictors. To avoid running into memory issues, we apply a restriction for the amount of tokens (n = 100) using `step_tokenfilter`.
+
+### Defining recipe 0
+
+```{r}
+rec0 <- recipe(c1 ~ ., data = select(d_train_id, text, c1, id)) %>%
+  update_role(id, new_role = "id") %>%
+  step_tokenize(text) %>%
+  step_stopwords(text, language = "de", stopword_source = "snowball") %>%
+  step_stem(text) %>%
+  step_tokenfilter(text, max_tokens = 1e2) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_numeric_predictors(), -starts_with("textfeature"), -ends_with("_count")) %>%
+  step_word_embeddings(text, embeddings = word_embeddings)
+
+rec0
+```
+
+### Preparing/Baking recipe 0
+
+```{r}
+rec0_prep <- prep(rec0)
+
+rec0_bake <- bake(rec0_prep, new_data = NULL)
+
+kable(head(rec0_bake))
+```
+
+## Recipe 1
+
+Recipe 1 applies all steps from recipe 0 and replaces `step_word_embeddings` with `step_tf`, which converts a token variable into multiple variables containing the token counts.
+
+### Defining recipe 1
+
+```{r}
+rec1 <- recipe(c1 ~ ., data = select(d_train_id, text, c1, id)) %>%
+  update_role(id, new_role = "id") %>%
+  step_tokenize(text) %>%
+  step_stopwords(text, language = "de", stopword_source = "snowball") %>%
+  step_stem(text) %>%
+  step_tokenfilter(text, max_tokens = 1e2) %>%
+  step_tf(text) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_numeric_predictors(), -starts_with("textfeature"), -ends_with("_count"))
+  
+
+rec1
+```
+
+### Preparing/Baking recipe 1
+
+```{r}
+rec1_prep <- prep(rec1)
+
+rec1_bake <- bake(rec1_prep, new_data = NULL)
+
+kable(head(rec1_bake))
+```
+
+## Recipe 2
+
+In this recipe we change `step_tf` to `step_tfidf`, which results in an inverse Document Frequency of our tokens.
+
+### Defining recipe 2
+
+```{r}
+rec2 <- recipe(c1 ~ ., data = select(d_train_id, text, c1, id)) %>%
+  update_role(id, new_role = "id") %>%
+  step_tokenize(text) %>%
+  step_stopwords(text, language = "de", stopword_source = "snowball") %>%
+  step_stem(text) %>%
+  step_tokenfilter(text, max_tokens = 1e2) %>%
+  step_tfidf(text) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_numeric_predictors(), -starts_with("textfeature"), -ends_with("_count"))
+  
+
+rec2
+```
+
+### Preparing/Baking recipe 2
+
+```{r}
+rec2_prep <- prep(rec2)
+
+rec2_bake <- bake(rec2_prep, new_data = NULL)
+
+kable(head(rec2_bake))
+```
+
+# Models
+
+## Naive Bayes
+
+```{r}
+m_nb <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
+
+m_nb
+```
+
+## Boost Trees - XGBoost
+
+```{r}
+doParallel::registerDoParallel()
+  
+m_xgb <- boost_tree(trees = tune()) %>% 
+set_engine("xgboost", nthreads = 12) %>% 
+set_mode("classification")
+```
+
+## Lasso Model
+
+-\> Regression model, penalized with the L1-norm (sum of the absolute coefficients).
+
+```{r}
+doParallel::registerDoParallel()
+cores <- parallel::detectCores(logical = TRUE)
+
+m_l <- logistic_reg(penalty = tune(), mixture = 1) %>%
+  set_mode("classification") %>%
+  set_engine("glmnet", num.threads = cores)
+
+m_l
+```
+
+## Ridge Regression
+
+-\> Creates a model that is penalized with the L2-norm. With that we can shrink the coefficient values.
+
+```{r}
+doParallel::registerDoParallel()
+cores <- parallel::detectCores(logical = TRUE)
+
+m_rr <- logistic_reg(penalty = tune(), mixture = 0) %>%
+    set_mode("classification") %>%
+    set_engine("glmnet")
+
+m_rr
+```
+
+## Elastic Net Model
+
+-\> Creates a regression model that is penalized with both the L1-norm and L2-norm. More or less a combination of Lasso and Ridge.
+
+```{r}
+m_en <- logistic_reg(penalty = tune(), mixture = 0.5) %>%
+    set_mode("classification") %>%
+    set_engine("glmnet")
+
+m_en
+```
+
+## Cross Validation
+
+We will be using the regular 10x cross validation.
+
+```{r}
+set.seed(13)
+cv_folds <- vfold_cv(d_train_id, v = 10)
+```
+
+## Lambda Grid
+
+We will be using a lambda grid with a total 30 levels.
+
+```{r}
+lambda_grid <- grid_regular(penalty(), levels = 30)
+```
+
+# Workflows
+
+## Workflow Rec0 - Naive Bayes
+
+```{r}
+wf_r0_nb <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_nb)
+```
+
+### Fit
+
+```{r}
+fit_r0_nb <- fit_resamples(wf_r0_nb, cv_folds)
+```
+
+### Performance
+
+```{r}
+wf_r0_nb_performance <- collect_metrics(fit_r0_nb)
+
+wf_r0_nb_performance
+```
+
+## Workflow Rec1 - Naive Bayes
+
+```{r}
+wf_r1_nb <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_nb)
+```
+
+### Fit
+
+```{r}
+fit_r1_nb <- fit_resamples(wf_r1_nb, cv_folds)
+```
+
+### Performance
+
+```{r}
+wf_r1_nb_performance <- collect_metrics(fit_r1_nb)
+
+wf_r1_nb_performance
+```
+
+## Workflow Rec2 - Naive Bayes
+
+```{r}
+wf_r2_nb <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_nb)
+```
+
+### Fit
+
+```{r}
+fit_r2_nb <- fit_resamples(wf_r2_nb, cv_folds)
+```
+
+### Performance
+
+```{r}
+wf_r2_nb_performance <- collect_metrics(fit_r2_nb)
+
+wf_r2_nb_performance
+```
+
+## Workflow Rec0 - XGBoost
+
+```{r}
+wf_r0_xgb <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_xgb)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r0_xgb <- tune_grid(wf_r0_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r0_xgb_performance <- collect_metrics(fit_r0_xgb)
+
+wf_r0_xgb_performance
+```
+
+## Workflow Rec1 - XGBoost
+
+```{r}
+wf_r1_xgb <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_xgb)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r1_xgb <- tune_grid(wf_r1_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r1_xgb_performance <- collect_metrics(fit_r1_xgb)
+
+wf_r1_xgb_performance
+```
+
+## Workflow Rec2 - XGBoost
+
+```{r}
+wf_r2_xgb <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_xgb)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r2_xgb <- tune_grid(wf_r2_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r2_xgb_performance <- collect_metrics(fit_r2_xgb)
+
+wf_r2_xgb_performance
+```
+
+## Workflow Rec0 - Lasso
+
+```{r}
+wf_r0_l <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_l)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r0_l <- tune_grid(wf_r0_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r0_l_performance <- collect_metrics(fit_r0_l)
+
+wf_r0_l_performance
+```
+
+## Workflow Rec1 - Lasso
+
+```{r}
+wf_r1_l <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_l)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r1_l <- tune_grid(wf_r1_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r1_l_performance <- collect_metrics(fit_r1_l)
+
+wf_r1_l_performance
+```
+
+## Workflow Rec2 - Lasso
+
+```{r}
+wf_r2_l <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_l)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r2_l <- tune_grid(wf_r2_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r2_l_performance <- collect_metrics(fit_r2_l)
+
+wf_r2_l_performance
+```
+
+## Workflow Rec0 - Ridge Regression
+
+```{r}
+wf_r0_rr <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_rr)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r0_rr <- tune_grid(wf_r0_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r0_rr_performance <- collect_metrics(fit_r0_rr)
+
+wf_r0_rr_performance
+```
+
+## Workflow Rec1 - Ridge Regression
+
+```{r}
+wf_r1_rr <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_rr)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r1_rr <- tune_grid(wf_r1_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r1_rr_performance <- collect_metrics(fit_r1_rr)
+
+wf_r1_rr_performance
+```
+
+## Workflow Rec2 - Ridge Regression
+
+```{r}
+wf_r2_rr <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_rr)
+```
+
+### Fit
+
+```{r}
+set.seed(2246)
+
+fit_r2_rr <- tune_grid(wf_r2_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+```
+
+### Performance
+
+```{r}
+wf_r2_rr_performance <- collect_metrics(fit_r2_rr)
+
+wf_r2_rr_performance
+```
+
+# Best Combination
+
+It seems like the XGBoost model with Recipe 1 gives us the best results.
+
+```{r}
+fit_r1_xgb %>%
+  show_best("roc_auc")
+```
+
+Lets save the best one so we can use it for a final fit.
+
+```{r}
+chosen_auc <- fit_r1_xgb %>% select_best(metric = "roc_auc", -penalty)
+```
+
+### Finalize
+
+Creating our final workflow.
+
+```{r}
+wf_final <- finalize_workflow(wf_r1_xgb, chosen_auc)
+
+wf_final
+```
+
+Final fit on the train sample.
+
+```{r}
+fit_final_train <- fit(wf_final, d_train_id)
+```
+
+## Prediction
+
+Lets predict using the test data.
+
+```{r}
+fit_final_test <- fit_final_train %>% 
+  predict(d_test_id)
+```
+
+Merge predictions with test data.
+
+```{r}
+fit_final_test_id <- fit_final_test %>% 
+  mutate(id = row_number())
+
+predictions <- fit_final_test_id %>% full_join(d_test_id, by = "id")
+
+```
+
+And finally lets see the metrics of our prediction, after factorizing the c1 column.
+
+```{r}
+predictions$c1 <- as.factor(predictions$c1)
+
+test_metrics <- predictions %>% metrics(c1, .pred_class)
+
+kable(test_metrics)
+```
