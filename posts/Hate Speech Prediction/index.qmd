@@ -570,18 +570,6 @@ m_rr <- logistic_reg(penalty = tune(), mixture = 0) %>%
 m_rr
 ```
 
-## Elastic Net Model
-
--\> Creates a regression model that is penalized with both the L1-norm and L2-norm. More or less a combination of Lasso and Ridge.
-
-```{r}
-m_en <- logistic_reg(penalty = tune(), mixture = 0.5) %>%
-    set_mode("classification") %>%
-    set_engine("glmnet")
-
-m_en
-```
-
 ## Cross Validation
 
 We will be using the regular 10x cross validation.
@@ -670,220 +658,220 @@ wf_r2_nb_performance
 ## Workflow Rec0 - XGBoost
 
 ```{r}
-#wf_r0_xgb <- workflow() %>%
-#  add_recipe(rec0) %>%
-#  add_model(m_xgb)
+wf_r0_xgb <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_xgb)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r0_xgb <- tune_grid(wf_r0_xgb, cv_folds, grid = 10, 
- #                       control = control_resamples(save_pred = TRUE))
+fit_r0_xgb <- tune_grid(wf_r0_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r0_xgb_performance <- collect_metrics(fit_r0_xgb)
+wf_r0_xgb_performance <- collect_metrics(fit_r0_xgb)
 
-#wf_r0_xgb_performance
+wf_r0_xgb_performance
 ```
 
 ## Workflow Rec1 - XGBoost
 
 ```{r}
-#wf_r1_xgb <- workflow() %>%
-#  add_recipe(rec1) %>%
-#  add_model(m_xgb)
+wf_r1_xgb <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_xgb)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r1_xgb <- tune_grid(wf_r1_xgb, cv_folds, grid = 10, 
- #                       control = control_resamples(save_pred = TRUE))
+fit_r1_xgb <- tune_grid(wf_r1_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r1_xgb_performance <- collect_metrics(fit_r1_xgb)
+wf_r1_xgb_performance <- collect_metrics(fit_r1_xgb)
 
-#wf_r1_xgb_performance
+wf_r1_xgb_performance
 ```
 
 ## Workflow Rec2 - XGBoost
 
 ```{r}
-##wf_r2_xgb <- workflow() %>%
-#  add_recipe(rec2) %>%
-#  add_model(m_xgb)
+wf_r2_xgb <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_xgb)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r2_xgb <- tune_grid(wf_r2_xgb, cv_folds, grid = 10, 
- #                       control = control_resamples(save_pred = TRUE))
+fit_r2_xgb <- tune_grid(wf_r2_xgb, cv_folds, grid = 10, 
+                        control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r2_xgb_performance <- collect_metrics(fit_r2_xgb)
+wf_r2_xgb_performance <- collect_metrics(fit_r2_xgb)
 
-#wf_r2_xgb_performance
+wf_r2_xgb_performance
 ```
 
 ## Workflow Rec0 - Lasso
 
 ```{r}
-#wf_r0_l <- workflow() %>%
-#  add_recipe(rec0) %>%
- # add_model(m_l)
+wf_r0_l <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_l)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r0_l <- tune_grid(wf_r0_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r0_l <- tune_grid(wf_r0_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r0_l_performance <- collect_metrics(fit_r0_l)
+wf_r0_l_performance <- collect_metrics(fit_r0_l)
 
-#wf_r0_l_performance
+wf_r0_l_performance
 ```
 
 ## Workflow Rec1 - Lasso
 
 ```{r}
-#wf_r1_l <- workflow() %>%
- # add_recipe(rec1) %>%
- # add_model(m_l)
+wf_r1_l <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_l)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r1_l <- tune_grid(wf_r1_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r1_l <- tune_grid(wf_r1_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r1_l_performance <- collect_metrics(fit_r1_l)
+wf_r1_l_performance <- collect_metrics(fit_r1_l)
 
-#wf_r1_l_performance
+wf_r1_l_performance
 ```
 
 ## Workflow Rec2 - Lasso
 
 ```{r}
-#wf_r2_l <- workflow() %>%
-#  add_recipe(rec2) %>%
- # add_model(m_l)
+wf_r2_l <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_l)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r2_l <- tune_grid(wf_r2_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r2_l <- tune_grid(wf_r2_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r2_l_performance <- collect_metrics(fit_r2_l)
+wf_r2_l_performance <- collect_metrics(fit_r2_l)
 
-#wf_r2_l_performance
+wf_r2_l_performance
 ```
 
 ## Workflow Rec0 - Ridge Regression
 
 ```{r}
-#wf_r0_rr <- workflow() %>%
- # add_recipe(rec0) %>%
- # add_model(m_rr)
+wf_r0_rr <- workflow() %>%
+  add_recipe(rec0) %>%
+  add_model(m_rr)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r0_rr <- tune_grid(wf_r0_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r0_rr <- tune_grid(wf_r0_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r0_rr_performance <- collect_metrics(fit_r0_rr)
+wf_r0_rr_performance <- collect_metrics(fit_r0_rr)
 
-#wf_r0_rr_performance
+wf_r0_rr_performance
 ```
 
 ## Workflow Rec1 - Ridge Regression
 
 ```{r}
-#wf_r1_rr <- workflow() %>%
-##  add_recipe(rec1) %>%
- # add_model(m_rr)
+wf_r1_rr <- workflow() %>%
+  add_recipe(rec1) %>%
+  add_model(m_rr)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r1_rr <- tune_grid(wf_r1_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r1_rr <- tune_grid(wf_r1_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r1_rr_performance <- collect_metrics(fit_r1_rr)
+wf_r1_rr_performance <- collect_metrics(fit_r1_rr)
 
-#wf_r1_rr_performance
+wf_r1_rr_performance
 ```
 
 ## Workflow Rec2 - Ridge Regression
 
 ```{r}
-#wf_r2_rr <- workflow() %>%
-#  add_recipe(rec2) %>%
-#  add_model(m_rr)
+wf_r2_rr <- workflow() %>%
+  add_recipe(rec2) %>%
+  add_model(m_rr)
 ```
 
 ### Fit
 
 ```{r}
-#set.seed(2246)
+set.seed(2246)
 
-#fit_r2_rr <- tune_grid(wf_r2_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
+fit_r2_rr <- tune_grid(wf_r2_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))
 ```
 
 ### Performance
 
 ```{r}
-#wf_r2_rr_performance <- collect_metrics(fit_r2_rr)
+wf_r2_rr_performance <- collect_metrics(fit_r2_rr)
 
-#wf_r2_rr_performance
+wf_r2_rr_performance
 ```
 
 # Best Combination
@@ -891,14 +879,14 @@ wf_r2_nb_performance
 It seems like the XGBoost model with Recipe 1 gives us the best results.
 
 ```{r}
-#fit_r1_xgb %>%
- # show_best("roc_auc")
+fit_r1_xgb %>%
+  show_best("roc_auc")
 ```
 
 Lets save the best one so we can use it for a final fit.
 
 ```{r}
-#chosen_auc <- fit_r1_xgb %>% select_best(metric = "roc_auc", -penalty)
+chosen_auc <- fit_r1_xgb %>% select_best(metric = "roc_auc", -penalty)
 ```
 
 ### Finalize
@@ -906,15 +894,15 @@ Lets save the best one so we can use it for a final fit.
 Creating our final workflow.
 
 ```{r}
-#wf_final <- finalize_workflow(wf_r1_xgb, chosen_auc)
+wf_final <- finalize_workflow(wf_r1_xgb, chosen_auc)
 
-#wf_final
+wf_final
 ```
 
 Final fit on the train sample.
 
 ```{r}
-#fit_final_train <- fit(wf_final, d_train_id)
+fit_final_train <- fit(wf_final, d_train_id)
 ```
 
 ## Prediction
@@ -922,26 +910,26 @@ Final fit on the train sample.
 Lets predict using the test data.
 
 ```{r}
-#fit_final_test <- fit_final_train %>% 
-#  predict(d_test_id)
+fit_final_test <- fit_final_train %>% 
+  predict(d_test_id)
 ```
 
 Merge predictions with test data.
 
 ```{r}
-#fit_final_test_id <- fit_final_test %>% 
- # mutate(id = row_number())
+fit_final_test_id <- fit_final_test %>% 
+  mutate(id = row_number())
 
-#predictions <- fit_final_test_id %>% full_join(d_test_id, by = "id")
+predictions <- fit_final_test_id %>% full_join(d_test_id, by = "id")
 
 ```
 
 And finally lets see the metrics of our prediction, after factorizing the c1 column.
 
 ```{r}
-#predictions$c1 <- as.factor(predictions$c1)
+predictions$c1 <- as.factor(predictions$c1)
 
-#test_metrics <- predictions %>% metrics(c1, .pred_class)
+test_metrics <- predictions %>% metrics(c1, .pred_class)
 
-#kable(test_metrics)
+kable(test_metrics)
 ```
