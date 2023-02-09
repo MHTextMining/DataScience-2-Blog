@@ -1,5 +1,5 @@
 ---
-title: "Analysebericht"
+title: "Hate-Speech Prediction"
 author: "Markus Häfner"
 date: "02.10.2023"
 format:
