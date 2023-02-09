@@ -187,7 +187,7 @@ div.csl-indent {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Analysebericht</h1>
+      <h1 class="title">Hate-Speech Prediction</h1>
                       </div>
   </div>
     
@@ -364,7 +364,7 @@ div.csl-indent {
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>In this blog post we will be solving classification problems by trying to identify hate speech in tweets using machine learning algorithms. The data that we will be using is sourced from <span class="citation" data-cites="wiegand2019">(<a href="#ref-wiegand2019" role="doc-biblioref">Wiegand 2019</a>)</span>.</p>
+<p>In this blog post we will be solving a classification problem by trying to identify Hate-Speech in tweets using machine learning algorithms. The data that we will be using is sourced from <span class="citation" data-cites="wiegand2019">(<a href="#ref-wiegand2019" role="doc-biblioref">Wiegand 2019</a>)</span>.</p>
 </section>
 <section id="setup" class="level1">
 <h1>Setup</h1>
@@ -570,7 +570,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>-&gt; Seems like we have 1/3 tweets, that contain hate-speech. and 2/3 normal ones. We wont really be taking classifier 2 (c2) into account during our analysis, but lets see what type of Hate-Speech ist the most common one.</p>
+<p>It seems like 1/3 of the tweets contain Hate-Speech. and 2/3 dont. We wont really be taking classifier 2 (c2) into account during our analysis, but lets look at what type of Hate-Speech is the most common.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d_train_id <span class="sc">%&gt;%</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(c2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -603,7 +603,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>-&gt; Every tweet that has been classified as “Offense” is categorized in either of the three categories PROFANITY, ABUSE, INSULT or OTHER. It seems like most hate speech cases are due to abuse.</p>
+<p>Every tweet that has been classified as <code>OFFENSE</code> is categorized in either of the four categories <code>PROFANITY</code>, <code>ABUSE</code>, <code>INSULT</code> or <code>OTHER</code>. Looking at the table we can see that most Hate-Speech cases are due to abuse.</p>
 </section>
 <section id="text" class="level2">
 <h2 class="anchored" data-anchor-id="text">Text</h2>
@@ -624,7 +624,7 @@ div.csl-indent {
 <p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Its not odd that the most used words are just fillwords. What we can conclude from that is that it will be really important for our later prediction to use stopwords. Lets try again using stopwords.</p>
+<p>Its not odd that the most used words are just filler words. What we can conclude from that is that it will be really important for our later prediction to use <code>stopwords</code>. Lets filter them out and try again.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>frequent_terms_sw <span class="ot">&lt;-</span> qdap<span class="sc">:::</span><span class="fu">freq_terms</span>(d_train<span class="sc">$</span>text, <span class="at">stopwords =</span> stopwords_de, <span class="dv">100</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -649,7 +649,7 @@ div.csl-indent {
 <p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Cool to look at. On first sight we can already see that a lot of words refer tagged users such as feldenfrizz.</p>
+<p>Basically just cool to look at. Even tough we can already see that a lot of words refer to tagged users such as feldenfrizz.</p>
 </section>
 </section>
 </section>
@@ -732,11 +732,11 @@ div.csl-indent {
 </section>
 <section id="sentiment-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="sentiment-analysis">Sentiment Analysis</h2>
-<p>For our sentiments we will be using SentiWS by <span class="citation" data-cites="remus-etal-2010-sentiws">(<a href="#ref-remus-etal-2010-sentiws" role="doc-biblioref">Remus, Quasthoff, and Heyer 2010</a>)</span>. The list contains a total of 16,406 positive and 16,328 negative german word forms.</p>
+<p>For our sentiments we will be using <code>SentiWS</code> by <span class="citation" data-cites="remus-etal-2010-sentiws">(<a href="#ref-remus-etal-2010-sentiws" role="doc-biblioref">Remus, Quasthoff, and Heyer 2010</a>)</span>. The list contains a total of 16,406 positive and 16,328 negative german word forms.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>sentiments <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/sentiments.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>To apply the sentiments we first need to “tokenize” our text. That way we will be able to apply a sentiment to each word.</p>
+<p>To apply the sentiments we first need to <code>tokenize</code> our text. That way we will be able to apply a sentiment to each word.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>d_train_unnest <span class="ot">&lt;-</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  d_train_tl <span class="sc">%&gt;%</span> </span>
@@ -801,7 +801,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>Now can combine our two datasets and match each word its own sentiment value.</p>
+<p>Now can combine our two data sets and match each word with its sentiment value.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>d_train_senti <span class="ot">&lt;-</span> </span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  d_train_unnest <span class="sc">%&gt;%</span>  </span>
@@ -938,7 +938,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>Finally lets unite our “sentimented” data with our original data again.</p>
+<p>Finally lets unite our “sentimented” data with our original data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>d_train_senti <span class="ot">&lt;-</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  d_train_tl <span class="sc">%&gt;%</span> </span>
@@ -1031,10 +1031,10 @@ div.csl-indent {
 </section>
 <section id="profanities" class="level2">
 <h2 class="anchored" data-anchor-id="profanities">Profanities</h2>
-<p>To Create a list of profanites we are going to combine data from three different sources.</p>
-<p>(1) A publicly available list of over 6000 german profane words <span class="citation" data-cites="schimpfw">(<a href="#ref-schimpfw" role="doc-biblioref"><span>“Schimpfwortliste,”</span> n.d.</a>)</span>.</p>
-<p>(2) <code>schimpfwoerter</code> from the package <span class="citation" data-cites="pradadata">(<a href="#ref-pradadata" role="doc-biblioref">Sauer 2023</a>)</span> provides another list of german profanities.</p>
-<p>(3) <span class="citation" data-cites="ahn">(<a href="#ref-ahn" role="doc-biblioref">Ahn, n.d.</a>)</span> curated a list of 1,300+ English terms that could be found offensive. Obviously our tweets are in german. But it seems like nowadays a lot of people are using english words or even a mixes of english and german words, so we will give it a try and then decide.</p>
+<p>To create a list of <code>profanities</code> we are going to combine data from three different sources.</p>
+<p>(1) A publicly available list of over 6000 German profane words <span class="citation" data-cites="schimpfw">(<a href="#ref-schimpfw" role="doc-biblioref"><span>“Schimpfwortliste,”</span> n.d.</a>)</span>.</p>
+<p>(2) <code>schimpfwoerter</code> by <span class="citation" data-cites="pradadata">(<a href="#ref-pradadata" role="doc-biblioref">Sauer 2023</a>)</span> provides another list of profane German words.</p>
+<p>(3) <span class="citation" data-cites="ahn">(<a href="#ref-ahn" role="doc-biblioref">Ahn, n.d.</a>)</span> curated a list of 1,300+ English terms that could be found offensive. Even though our tweets are in German, we are going to give it a try, since nowadays a lot of people are using English words or even a mixes of English and German words.</p>
 <section id="loadrename-lists" class="level3">
 <h3 class="anchored" data-anchor-id="loadrename-lists">Load/Rename Lists</h3>
 <div class="cell">
@@ -1087,7 +1087,7 @@ div.csl-indent {
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, token) <span class="sc">%&gt;%</span> </span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">profanity =</span> token <span class="sc">%in%</span> profanities<span class="sc">$</span>V1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>How many words are considered as profanities?</p>
+<p>How many words are considered profane?</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d_train_prof <span class="sc">%&gt;%</span> </span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(profanity))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1116,11 +1116,11 @@ div.csl-indent {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>d_train_prof <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(profanity), <span class="at">.by_group =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Our mistake is obvious. The german word “die” is considered profane, since “die” is the verb to death. Because of that we will refrain from using the english list. Lets remove “die from our profanity list and try again.</p>
+<p>Our mistake is obvious. The German word <code>die</code> is considered profane, since it means <code>stirb</code> in English. Lets remove <code>die</code> from our list and try again.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>profanities <span class="ot">&lt;-</span> <span class="fu">subset</span>(profanities, V1<span class="sc">!=</span> <span class="st">"die"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Lets try again - how many words are considered as profanities?</p>
+<p>Next try. How many words are considered profane?</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>d_train_prof <span class="ot">&lt;-</span> </span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>d_train_unnest <span class="sc">%&gt;%</span> </span>
@@ -1160,11 +1160,11 @@ div.csl-indent {
 </section>
 <section id="emojis" class="level2">
 <h2 class="anchored" data-anchor-id="emojis">Emojis</h2>
-<p>For emojis we source the emoji data list from the package <span class="citation" data-cites="remoji">(<a href="#ref-remoji" role="doc-biblioref">FitzJohn" 2023</a>)</span>, which includes a total of 870 emojis.</p>
+<p>For emojis we source the emoji data list from the package <span class="citation" data-cites="remoji">(<a href="#ref-remoji" role="doc-biblioref">FitzJohn" 2023</a>)</span>, It includes a total of 870 emojis.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>emojis <span class="ot">&lt;-</span> <span class="fu">emoji</span>(<span class="fu">list_emoji</span>(), <span class="at">pad =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Since a sole list of emojis is not really much use for predicting Hate-Speech, it would be useful to have the corresponding sentiment score of each emoji to determine their sentimental value. Luckily <span class="citation" data-cites="Kralj2015emojis">(<a href="#ref-Kralj2015emojis" role="doc-biblioref">Kralj Novak et al. 2015</a>)</span> provides the needed information on their <a href="https://kt.ijs.si/data/Emoji_sentiment_ranking/index.html">website</a>.</p>
+<p>Since a sole list of emojis is not really much use for predicting Hate-Speech, it would be useful to have the corresponding sentiment score of each emoji. Luckily <span class="citation" data-cites="Kralj2015emojis">(<a href="#ref-Kralj2015emojis" role="doc-biblioref">Kralj Novak et al. 2015</a>)</span> provides the needed information on their <a href="https://kt.ijs.si/data/Emoji_sentiment_ranking/index.html">website</a>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>emojis_sentiments <span class="ot">&lt;-</span> <span class="fu">data_read</span>(<span class="st">"data/emoji_sentiment_scores.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -1172,7 +1172,7 @@ div.csl-indent {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>emojis_sentiments <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(senti_score, <span class="at">.by_group =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Its not suprising to see some emojis up there. Still a lot of them are also so negatively conotated because Twitter is so heavily related to politics and elections. Thus using all of the negative emojis does not seem like the best idea. Therefore we handpick a few out of our curated list:</p>
+<p>Its not surprising to see some emojis up there. Still a lot of them are also so negatively connotated because Twitter is so heavily related to politics and elections. Thus using all of the negative emojis does not seem like the best idea. Therefore we handpick a few for our list:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>emojis_hateful <span class="ot">&lt;-</span>  </span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"❌"</span>,<span class="st">"✂️"</span>,<span class="st">"💉"</span>,<span class="st">"🔪"</span>,<span class="st">"🔪"</span>,<span class="st">"🔫"</span>,<span class="st">"💣"</span>,<span class="st">"🐍"</span>,<span class="st">"🐷"</span>,<span class="st">"🐵"</span>,<span class="st">"💩"</span>,<span class="st">"💩"</span>,<span class="st">"💩"</span>,</span>
@@ -1180,7 +1180,7 @@ div.csl-indent {
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"👎️"</span>,<span class="st">"🤢"</span>, <span class="st">"🤮"</span>,  <span class="st">"😖"</span>, <span class="st">"😣"</span>, <span class="st">"😩"</span>, <span class="st">"😨"</span>, <span class="st">"😝"</span>, <span class="st">"😳"</span>, <span class="st">"😬"</span>,</span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"😵"</span>,<span class="st">"🖕"</span>,<span class="st">"🤦‍♀️"</span>, <span class="st">"🤦‍"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Lets save our <code>hateful_emojis_list</code> as a dataframe in our data directory.</p>
+<p>Lets save our <code>hateful_emojis_list</code> as a data frame in our data directory.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>hateful_emoji_list <span class="ot">&lt;-</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">emoji =</span> emojis_hateful)</span>
@@ -1190,13 +1190,13 @@ div.csl-indent {
 </section>
 <section id="word-embeddings" class="level2">
 <h2 class="anchored" data-anchor-id="word-embeddings">Word Embeddings</h2>
-<p>For our Word Embeddings we will be using the fastText model of pretrained german embeddings eprovided by Deepset.ai The data can be found <a href="https://www.deepset.ai/german-word-embeddings">here</a>.</p>
-<p>Loading our Word embeddings model</p>
+<p>For our <code>word_embeddings</code> we will be using the fastText model of pre-trained German embeddings, provided by Deepset.ai. The data can be found <a href="https://www.deepset.ai/german-word-embeddings">here</a>.</p>
+<p>Loading our Word Embeddings model.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="st">"data/model.bin"</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>deepset_model <span class="ot">&lt;-</span> <span class="fu">load_model</span>(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Extracting dictionary and word vectors</p>
+<p>Extracting dictionary and word vectors.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>deepset_dict <span class="ot">&lt;-</span> <span class="fu">get_dictionary</span>(deepset_model)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>word_vectors <span class="ot">&lt;-</span> <span class="fu">get_word_vectors</span>(deepset_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1205,11 +1205,10 @@ div.csl-indent {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>word_tibble <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">word =</span> deepset_dict)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Merging the tibble with the the word vectors.</p>
 <div class="cell">
 
 </div>
-<p>Renaming Columns and saving the file in our data folder.</p>
+<p>Merging the tibble with the word vectors. Renaming Columns and saving the file in our data folder.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(word_embeddings) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"word"</span>, <span class="fu">paste0</span>(<span class="st">"v"</span>, <span class="fu">sprintf</span>(<span class="st">"%03d"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>)))</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(word_embeddings, file = "data/word_embeddings.rds")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -4095,390 +4094,219 @@ Computational engine: glmnet </code></pre>
 <section id="workflow-rec0---xgboost" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec0---xgboost">Workflow Rec0 - XGBoost</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>wf_r0_xgb <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec0) <span class="sc">%&gt;%</span></span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_xgb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_xgb &lt;- workflow() %&gt;%</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec0) %&gt;%</span></span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_model(m_xgb)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-3" class="level3">
 <h3 class="anchored" data-anchor-id="fit-3">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
 <span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>fit_r0_xgb <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r0_xgb, cv_folds, <span class="at">grid =</span> <span class="dv">10</span>, </span>
-<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r0_xgb &lt;- tune_grid(wf_r0_xgb, cv_folds, grid = 10, </span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a> <span class="co">#                       control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-3" class="level3">
 <h3 class="anchored" data-anchor-id="performance-3">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>wf_r0_xgb_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r0_xgb)</span>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_xgb_performance &lt;- collect_metrics(fit_r0_xgb)</span></span>
 <span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>wf_r0_xgb_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 20 × 7
-   trees .metric  .estimator  mean     n std_err .config              
-   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1    23 accuracy binary     0.667    10 0.00596 Preprocessor1_Model01
- 2    23 roc_auc  binary     0.629    10 0.00704 Preprocessor1_Model01
- 3   223 accuracy binary     0.675    10 0.00627 Preprocessor1_Model02
- 4   223 roc_auc  binary     0.620    10 0.00635 Preprocessor1_Model02
- 5   459 accuracy binary     0.677    10 0.00547 Preprocessor1_Model03
- 6   459 roc_auc  binary     0.617    10 0.00704 Preprocessor1_Model03
- 7   795 accuracy binary     0.677    10 0.00582 Preprocessor1_Model04
- 8   795 roc_auc  binary     0.617    10 0.00715 Preprocessor1_Model04
- 9   838 accuracy binary     0.675    10 0.00572 Preprocessor1_Model05
-10   838 roc_auc  binary     0.616    10 0.00715 Preprocessor1_Model05
-11  1150 accuracy binary     0.677    10 0.00564 Preprocessor1_Model06
-12  1150 roc_auc  binary     0.615    10 0.00714 Preprocessor1_Model06
-13  1239 accuracy binary     0.679    10 0.00557 Preprocessor1_Model07
-14  1239 roc_auc  binary     0.615    10 0.00719 Preprocessor1_Model07
-15  1464 accuracy binary     0.678    10 0.00532 Preprocessor1_Model08
-16  1464 roc_auc  binary     0.616    10 0.00705 Preprocessor1_Model08
-17  1620 accuracy binary     0.677    10 0.00573 Preprocessor1_Model09
-18  1620 roc_auc  binary     0.615    10 0.00711 Preprocessor1_Model09
-19  1930 accuracy binary     0.677    10 0.00559 Preprocessor1_Model10
-20  1930 roc_auc  binary     0.615    10 0.00689 Preprocessor1_Model10</code></pre>
-</div>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_xgb_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec1---xgboost" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec1---xgboost">Workflow Rec1 - XGBoost</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>wf_r1_xgb <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec1) <span class="sc">%&gt;%</span></span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_xgb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_xgb &lt;- workflow() %&gt;%</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec1) %&gt;%</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_model(m_xgb)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-4" class="level3">
 <h3 class="anchored" data-anchor-id="fit-4">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>fit_r1_xgb <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r1_xgb, cv_folds, <span class="at">grid =</span> <span class="dv">10</span>, </span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r1_xgb &lt;- tune_grid(wf_r1_xgb, cv_folds, grid = 10, </span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a> <span class="co">#                       control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-4" class="level3">
 <h3 class="anchored" data-anchor-id="performance-4">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>wf_r1_xgb_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r1_xgb)</span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>wf_r1_xgb_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 20 × 7
-   trees .metric  .estimator  mean     n std_err .config              
-   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1    23 accuracy binary     0.693    10 0.00332 Preprocessor1_Model01
- 2    23 roc_auc  binary     0.661    10 0.00646 Preprocessor1_Model01
- 3   223 accuracy binary     0.687    10 0.00573 Preprocessor1_Model02
- 4   223 roc_auc  binary     0.648    10 0.00851 Preprocessor1_Model02
- 5   459 accuracy binary     0.683    10 0.00669 Preprocessor1_Model03
- 6   459 roc_auc  binary     0.643    10 0.00931 Preprocessor1_Model03
- 7   795 accuracy binary     0.681    10 0.00707 Preprocessor1_Model04
- 8   795 roc_auc  binary     0.639    10 0.00963 Preprocessor1_Model04
- 9   838 accuracy binary     0.681    10 0.00681 Preprocessor1_Model05
-10   838 roc_auc  binary     0.639    10 0.00973 Preprocessor1_Model05
-11  1150 accuracy binary     0.679    10 0.00646 Preprocessor1_Model06
-12  1150 roc_auc  binary     0.638    10 0.00942 Preprocessor1_Model06
-13  1239 accuracy binary     0.678    10 0.00656 Preprocessor1_Model07
-14  1239 roc_auc  binary     0.638    10 0.00981 Preprocessor1_Model07
-15  1464 accuracy binary     0.677    10 0.00719 Preprocessor1_Model08
-16  1464 roc_auc  binary     0.637    10 0.00950 Preprocessor1_Model08
-17  1620 accuracy binary     0.675    10 0.00634 Preprocessor1_Model09
-18  1620 roc_auc  binary     0.637    10 0.00954 Preprocessor1_Model09
-19  1930 accuracy binary     0.675    10 0.00594 Preprocessor1_Model10
-20  1930 roc_auc  binary     0.635    10 0.00884 Preprocessor1_Model10</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_xgb_performance &lt;- collect_metrics(fit_r1_xgb)</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_xgb_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec2---xgboost" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec2---xgboost">Workflow Rec2 - XGBoost</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>wf_r2_xgb <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec2) <span class="sc">%&gt;%</span></span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_xgb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="do">##wf_r2_xgb &lt;- workflow() %&gt;%</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec2) %&gt;%</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_model(m_xgb)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-5" class="level3">
 <h3 class="anchored" data-anchor-id="fit-5">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>fit_r2_xgb <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r2_xgb, cv_folds, <span class="at">grid =</span> <span class="dv">10</span>, </span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r2_xgb &lt;- tune_grid(wf_r2_xgb, cv_folds, grid = 10, </span></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a> <span class="co">#                       control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-5" class="level3">
 <h3 class="anchored" data-anchor-id="performance-5">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>wf_r2_xgb_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r2_xgb)</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>wf_r2_xgb_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 20 × 7
-   trees .metric  .estimator  mean     n std_err .config              
-   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1    23 accuracy binary     0.695    10 0.00383 Preprocessor1_Model01
- 2    23 roc_auc  binary     0.655    10 0.00585 Preprocessor1_Model01
- 3   223 accuracy binary     0.680    10 0.00391 Preprocessor1_Model02
- 4   223 roc_auc  binary     0.644    10 0.00679 Preprocessor1_Model02
- 5   459 accuracy binary     0.672    10 0.00308 Preprocessor1_Model03
- 6   459 roc_auc  binary     0.631    10 0.00849 Preprocessor1_Model03
- 7   795 accuracy binary     0.669    10 0.00435 Preprocessor1_Model04
- 8   795 roc_auc  binary     0.628    10 0.00914 Preprocessor1_Model04
- 9   838 accuracy binary     0.668    10 0.00481 Preprocessor1_Model05
-10   838 roc_auc  binary     0.628    10 0.00916 Preprocessor1_Model05
-11  1150 accuracy binary     0.669    10 0.00505 Preprocessor1_Model06
-12  1150 roc_auc  binary     0.624    10 0.00914 Preprocessor1_Model06
-13  1239 accuracy binary     0.667    10 0.00530 Preprocessor1_Model07
-14  1239 roc_auc  binary     0.623    10 0.00901 Preprocessor1_Model07
-15  1464 accuracy binary     0.670    10 0.00449 Preprocessor1_Model08
-16  1464 roc_auc  binary     0.622    10 0.00882 Preprocessor1_Model08
-17  1620 accuracy binary     0.666    10 0.00423 Preprocessor1_Model09
-18  1620 roc_auc  binary     0.622    10 0.00904 Preprocessor1_Model09
-19  1930 accuracy binary     0.667    10 0.00420 Preprocessor1_Model10
-20  1930 roc_auc  binary     0.621    10 0.00873 Preprocessor1_Model10</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_xgb_performance &lt;- collect_metrics(fit_r2_xgb)</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_xgb_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec0---lasso" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec0---lasso">Workflow Rec0 - Lasso</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>wf_r0_l <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec0) <span class="sc">%&gt;%</span></span>
-<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_l)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_l &lt;- workflow() %&gt;%</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec0) %&gt;%</span></span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_model(m_l)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-6" class="level3">
 <h3 class="anchored" data-anchor-id="fit-6">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>fit_r0_l <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r0_l, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r0_l &lt;- tune_grid(wf_r0_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-6" class="level3">
 <h3 class="anchored" data-anchor-id="performance-6">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>wf_r0_l_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r0_l)</span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>wf_r0_l_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.691    10 0.00813 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.644    10 0.00954 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.691    10 0.00813 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.644    10 0.00954 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.691    10 0.00813 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.644    10 0.00954 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.691    10 0.00813 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.644    10 0.00954 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.691    10 0.00813 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.644    10 0.00954 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_l_performance &lt;- collect_metrics(fit_r0_l)</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_l_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec1---lasso" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec1---lasso">Workflow Rec1 - Lasso</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>wf_r1_l <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec1) <span class="sc">%&gt;%</span></span>
-<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_l)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_l &lt;- workflow() %&gt;%</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_recipe(rec1) %&gt;%</span></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_model(m_l)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-7" class="level3">
 <h3 class="anchored" data-anchor-id="fit-7">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a>fit_r1_l <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r1_l, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r1_l &lt;- tune_grid(wf_r1_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-7" class="level3">
 <h3 class="anchored" data-anchor-id="performance-7">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>wf_r1_l_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r1_l)</span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>wf_r1_l_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.684    10 0.00793 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.644    10 0.00748 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.684    10 0.00793 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.644    10 0.00748 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.684    10 0.00793 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.644    10 0.00748 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.684    10 0.00793 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.644    10 0.00748 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.684    10 0.00793 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.644    10 0.00748 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_l_performance &lt;- collect_metrics(fit_r1_l)</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_l_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec2---lasso" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec2---lasso">Workflow Rec2 - Lasso</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>wf_r2_l <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec2) <span class="sc">%&gt;%</span></span>
-<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_l)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_l &lt;- workflow() %&gt;%</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec2) %&gt;%</span></span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_model(m_l)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-8" class="level3">
 <h3 class="anchored" data-anchor-id="fit-8">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>fit_r2_l <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r2_l, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r2_l &lt;- tune_grid(wf_r2_l, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-8" class="level3">
 <h3 class="anchored" data-anchor-id="performance-8">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>wf_r2_l_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r2_l)</span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>wf_r2_l_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.683    10 0.00614 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.647    10 0.00728 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.683    10 0.00614 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.647    10 0.00728 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.683    10 0.00614 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.647    10 0.00728 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.683    10 0.00614 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.647    10 0.00728 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.683    10 0.00614 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.647    10 0.00728 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_l_performance &lt;- collect_metrics(fit_r2_l)</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_l_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec0---ridge-regression" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec0---ridge-regression">Workflow Rec0 - Ridge Regression</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>wf_r0_rr <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec0) <span class="sc">%&gt;%</span></span>
-<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_rr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_rr &lt;- workflow() %&gt;%</span></span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_recipe(rec0) %&gt;%</span></span>
+<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_model(m_rr)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-9" class="level3">
 <h3 class="anchored" data-anchor-id="fit-9">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>fit_r0_rr <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r0_rr, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r0_rr &lt;- tune_grid(wf_r0_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-9" class="level3">
 <h3 class="anchored" data-anchor-id="performance-9">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>wf_r0_rr_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r0_rr)</span>
-<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>wf_r0_rr_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.687    10 0.00693 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.644    10 0.00949 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.687    10 0.00693 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.644    10 0.00949 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.687    10 0.00693 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.644    10 0.00949 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.687    10 0.00693 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.644    10 0.00949 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.687    10 0.00693 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.644    10 0.00949 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_rr_performance &lt;- collect_metrics(fit_r0_rr)</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r0_rr_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec1---ridge-regression" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec1---ridge-regression">Workflow Rec1 - Ridge Regression</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>wf_r1_rr <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec1) <span class="sc">%&gt;%</span></span>
-<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_rr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_rr &lt;- workflow() %&gt;%</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  add_recipe(rec1) %&gt;%</span></span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a> <span class="co"># add_model(m_rr)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-10" class="level3">
 <h3 class="anchored" data-anchor-id="fit-10">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>fit_r1_rr <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r1_rr, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r1_rr &lt;- tune_grid(wf_r1_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-10" class="level3">
 <h3 class="anchored" data-anchor-id="performance-10">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>wf_r1_rr_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r1_rr)</span>
-<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb103-3"><a href="#cb103-3" aria-hidden="true" tabindex="-1"></a>wf_r1_rr_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.685    10 0.00772 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.645    10 0.00752 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.685    10 0.00772 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.645    10 0.00752 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.685    10 0.00772 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.645    10 0.00752 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.685    10 0.00772 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.645    10 0.00752 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.685    10 0.00772 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.645    10 0.00752 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_rr_performance &lt;- collect_metrics(fit_r1_rr)</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r1_rr_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="workflow-rec2---ridge-regression" class="level2">
 <h2 class="anchored" data-anchor-id="workflow-rec2---ridge-regression">Workflow Rec2 - Ridge Regression</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>wf_r2_rr <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec2) <span class="sc">%&gt;%</span></span>
-<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(m_rr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_rr &lt;- workflow() %&gt;%</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_recipe(rec2) %&gt;%</span></span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  add_model(m_rr)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="fit-11" class="level3">
 <h3 class="anchored" data-anchor-id="fit-11">Fit</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2246</span>)</span>
-<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>fit_r2_rr <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(wf_r2_rr, cv_folds, <span class="at">grid =</span> lambda_grid, <span class="at">control =</span> <span class="fu">control_resamples</span>(<span class="at">save_pred =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(2246)</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r2_rr &lt;- tune_grid(wf_r2_rr, cv_folds, grid = lambda_grid, control = control_resamples(save_pred = TRUE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance-11" class="level3">
 <h3 class="anchored" data-anchor-id="performance-11">Performance</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>wf_r2_rr_performance <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(fit_r2_rr)</span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>wf_r2_rr_performance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 60 × 7
-    penalty .metric  .estimator  mean     n std_err .config              
-      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
- 1 1   e-10 accuracy binary     0.684    10 0.00581 Preprocessor1_Model01
- 2 1   e-10 roc_auc  binary     0.647    10 0.00733 Preprocessor1_Model01
- 3 2.21e-10 accuracy binary     0.684    10 0.00581 Preprocessor1_Model02
- 4 2.21e-10 roc_auc  binary     0.647    10 0.00733 Preprocessor1_Model02
- 5 4.89e-10 accuracy binary     0.684    10 0.00581 Preprocessor1_Model03
- 6 4.89e-10 roc_auc  binary     0.647    10 0.00733 Preprocessor1_Model03
- 7 1.08e- 9 accuracy binary     0.684    10 0.00581 Preprocessor1_Model04
- 8 1.08e- 9 roc_auc  binary     0.647    10 0.00733 Preprocessor1_Model04
- 9 2.40e- 9 accuracy binary     0.684    10 0.00581 Preprocessor1_Model05
-10 2.40e- 9 roc_auc  binary     0.647    10 0.00733 Preprocessor1_Model05
-# … with 50 more rows</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_rr_performance &lt;- collect_metrics(fit_r2_rr)</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_r2_rr_performance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -4487,115 +4315,47 @@ Computational engine: glmnet </code></pre>
 <h1>Best Combination</h1>
 <p>It seems like the XGBoost model with Recipe 1 gives us the best results.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>fit_r1_xgb <span class="sc">%&gt;%</span></span>
-<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_best</span>(<span class="st">"roc_auc"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 7
-  trees .metric .estimator  mean     n std_err .config              
-  &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                
-1    23 roc_auc binary     0.661    10 0.00646 Preprocessor1_Model01
-2   223 roc_auc binary     0.648    10 0.00851 Preprocessor1_Model02
-3   459 roc_auc binary     0.643    10 0.00931 Preprocessor1_Model03
-4   795 roc_auc binary     0.639    10 0.00963 Preprocessor1_Model04
-5   838 roc_auc binary     0.639    10 0.00973 Preprocessor1_Model05</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_r1_xgb %&gt;%</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a> <span class="co"># show_best("roc_auc")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Lets save the best one so we can use it for a final fit.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>chosen_auc <span class="ot">&lt;-</span> fit_r1_xgb <span class="sc">%&gt;%</span> <span class="fu">select_best</span>(<span class="at">metric =</span> <span class="st">"roc_auc"</span>, <span class="sc">-</span>penalty)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="co">#chosen_auc &lt;- fit_r1_xgb %&gt;% select_best(metric = "roc_auc", -penalty)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="finalize" class="level3">
 <h3 class="anchored" data-anchor-id="finalize">Finalize</h3>
 <p>Creating our final workflow.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>wf_final <span class="ot">&lt;-</span> <span class="fu">finalize_workflow</span>(wf_r1_xgb, chosen_auc)</span>
-<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a>wf_final</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>══ Workflow ════════════════════════════════════════════════════════════════════
-Preprocessor: Recipe
-Model: boost_tree()
-
-── Preprocessor ────────────────────────────────────────────────────────────────
-7 Recipe Steps
-
-• step_tokenize()
-• step_stopwords()
-• step_stem()
-• step_tokenfilter()
-• step_tf()
-• step_zv()
-• step_normalize()
-
-── Model ───────────────────────────────────────────────────────────────────────
-Boosted Tree Model Specification (classification)
-
-Main Arguments:
-  trees = 23
-
-Engine-Specific Arguments:
-  nthreads = 12
-
-Computational engine: xgboost </code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_final &lt;- finalize_workflow(wf_r1_xgb, chosen_auc)</span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="co">#wf_final</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Final fit on the train sample.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>fit_final_train <span class="ot">&lt;-</span> <span class="fu">fit</span>(wf_final, d_train_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[03:11:23] WARNING: amalgamation/../src/learner.cc:627: 
-Parameters: { "nthreads" } might not be used.
-
-  This could be a false alarm, with some parameters getting used by language bindings but
-  then being mistakenly passed down to XGBoost core, or some parameter actually being used
-  but getting flagged wrongly here. Please open an issue if you find any such cases.</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_final_train &lt;- fit(wf_final, d_train_id)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="prediction" class="level2">
 <h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
 <p>Lets predict using the test data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>fit_final_test <span class="ot">&lt;-</span> fit_final_train <span class="sc">%&gt;%</span> </span>
-<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(d_test_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_final_test &lt;- fit_final_train %&gt;% </span></span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  predict(d_test_id)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Merge predictions with test data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>fit_final_test_id <span class="ot">&lt;-</span> fit_final_test <span class="sc">%&gt;%</span> </span>
-<span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">row_number</span>())</span>
-<span id="cb117-3"><a href="#cb117-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb117-4"><a href="#cb117-4" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> fit_final_test_id <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(d_test_id, <span class="at">by =</span> <span class="st">"id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fit_final_test_id &lt;- fit_final_test %&gt;% </span></span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a> <span class="co"># mutate(id = row_number())</span></span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a><span class="co">#predictions &lt;- fit_final_test_id %&gt;% full_join(d_test_id, by = "id")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And finally lets see the metrics of our prediction, after factorizing the c1 column.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>predictions<span class="sc">$</span>c1 <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(predictions<span class="sc">$</span>c1)</span>
-<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>test_metrics <span class="ot">&lt;-</span> predictions <span class="sc">%&gt;%</span> <span class="fu">metrics</span>(c1, .pred_class)</span>
-<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(test_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<table class="table table-sm table-striped">
-<thead>
-<tr class="header">
-<th style="text-align: left;">.metric</th>
-<th style="text-align: left;">.estimator</th>
-<th style="text-align: right;">.estimate</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">accuracy</td>
-<td style="text-align: left;">binary</td>
-<td style="text-align: right;">0.6653454</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">kap</td>
-<td style="text-align: left;">binary</td>
-<td style="text-align: right;">0.0648416</td>
-</tr>
-</tbody>
-</table>
-</div>
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="co">#predictions$c1 &lt;- as.factor(predictions$c1)</span></span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a><span class="co">#test_metrics &lt;- predictions %&gt;% metrics(c1, .pred_class)</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a><span class="co">#kable(test_metrics)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
